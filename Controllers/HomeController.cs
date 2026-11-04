@@ -7,14 +7,17 @@ namespace ZoomTesting.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private ZoomMeetingService _service;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, ZoomMeetingService service)
     {
         _logger =  logger;
+        _service = service;
     }
 
     public IActionResult Index()
     {
+        _service.CreateMeetingAsync("Test Meeting", 30).Wait();
         return View();
     }
 

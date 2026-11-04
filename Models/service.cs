@@ -17,7 +17,7 @@ namespace ZoomTesting.Models
         }
 
         // 1. Fetch the Server-to-Server Access Token
-        private async Task<string> GetAccessTokenAsync()
+        public async Task<string> GetAccessTokenAsync()
         {
             var zoomConfig = _configuration.GetSection("Zoom");
             var accountId = zoomConfig["AccountId"];
