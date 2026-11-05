@@ -17,12 +17,23 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var ss = await _service.GetAccessToken(null!);
+        UserToken token = await _service.GetAccessToken(null!);
 
-        var access_token = ss.access_token;
-        var token_type = ss.token_type;
-        var scope = ss.scope;
-        var expires_in = ss.expires_in;
+        var access_token = token.access_token;
+        var token_type = token.token_type;
+        var scope = token.scope;
+        var expires_in = token.expires_in;
+
+        Request? request = new Request();
+        request.Token = token.access_token;
+        request.MeetingRequest = new();
+
+
+        var mr = await _service.CreateMeeting(request);
+
+        //var data = dashboardDAL.InsertTELS154(mr.id, mr.topic, mr.join_url, request.MeetingRequest.start_time, mr.password, request.MeetingRequest.duration, HttpContext.Session.GetString("EMP_CODE"));
+
+
 
         return View();
     }

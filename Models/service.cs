@@ -25,41 +25,11 @@ namespace ZoomTesting.Models
         static readonly string ZOOM_ACCOUNT_ID = "BoMQjc7jQAuA8DLJrjyFLQ";
         static readonly string ZOOM_CLIENT_ID = "dvjIuLMTdyb4_pFQoFvQQ";
         static readonly string ZOOM_CLIENT_SECRET = "wco3GnCK2TibJ4KPG5Giba5n0y0U6DeR";
-        public class Request
-        {
-            public string Token { get; set; }
-            public MeetingRequest MeetingRequest { get; set; }
-        }
-        public class MeetingRequest
-        {
-            public string topic { get; set; }
-            public int type { get; set; } = 1;
-            public string password { get; set; }
-            public string agenda { get; set; }
-            public string start_time { get; set; }
-            public string timezone { get; set; }
-            public string duration { get; set; }
-            public string lectureInformation { get; set; }
-            public string speakerId { get; set; }
-            public Settings settings { get; set; }
-        }
-        public class Settings
-        {
-            public bool host_video { get; set; } = true;
-            public bool participant_video { get; set; } = true;
-            public bool join_before_host { get; set; } = true;
-            public bool mute_upon_entry { get; set; } = true;
-            public int approval_type { get; set; } = 0;
-        }
-        public class UserToken
-        {
-            public string access_token { get; set; }
-            public string token_type { get; set; }
-            public string expires_in { get; set; }
-            public string scope { get; set; }
-        }
 
-        public async Task<UserToken> GetAccessToken([FromBody] Request request)
+
+
+        //[HttpPost("/api/meeting/getAccessToken")]
+        public async Task<UserToken> GetAccessToken([FromBody] Request request)  // request = null
         {
             using (var client = new HttpClient())
             {
@@ -74,91 +44,143 @@ namespace ZoomTesting.Models
         }
 
 
+        //[HttpPost("/api/meeting/createMeeting")]
+        public async Task<MeetingResponse> CreateMeeting([FromBody] Request? request)
+        {
+            string userId = string.Empty;
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {request?.Token}");
+                var response = await client.GetAsync("https://api.zoom.us/v2/users");
+                string result = await response.Content.ReadAsStringAsync();
+                var userResponse = JsonConvert.DeserializeObject<ZoomUserResponse>(result);
+                userId = userResponse.users[0].id;
+            }
+
+            using (var client = new HttpClient())
+            {
+                request.MeetingRequest.settings = new Settings
+                {
+                    approval_type = 0,
+                    host_video = true,
+                    join_before_host = true,
+                    mute_upon_entry = true,
+                    participant_video = true
+                };
+                //request.MeetingRequest.start_time = Convert.ToDateTime(request.MeetingRequest.start_time).ToString("YYYY-MM-ddTHH:mm:ssZ");
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {request.Token}");
+                var response = await client.PostAsJsonAsync($"https://api.zoom.us/v2/users/{userId}/meetings", request.MeetingRequest);
+                string result = await response.Content.ReadAsStringAsync();
+                var mr = JsonConvert.DeserializeObject<MeetingResponse>(result);
+                //var data = dashboardDAL.InsertTELS154(mr.id, mr.topic, mr.join_url, request.MeetingRequest.start_time, mr.password, request.MeetingRequest.duration, HttpContext.Session.GetString("EMP_CODE"));
+                return mr;
+            }
+            //using (var client = new HttpClient())
+            //{
+            //    request.MeetingRequest.settings = new Settings
+            //    {
+            //        approval_type = 0,
+            //        host_video = true,
+            //        join_before_host = true,
+            //        mute_upon_entry = true,
+            //        participant_video = true
+            //    };
+            //    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {request.Token}");
+            //    //var response = await client.PostAsJsonAsync($"https://api.zoom.us/v2/report/meetings/82920081127/participants", request.MeetingRequest);
+            //    var response = await client.GetAsync($"https://api.zoom.us/v2/meetings/87140885608");
+            //    string result = await response.Content.ReadAsStringAsync();
+            //    var mr = JsonConvert.DeserializeObject<MeetingResponse>(result);
+            //    var data = dashboardDAL.InsertTELS154(mr.id, mr.topic, mr.join_url, request.MeetingRequest.start_time, mr.password, request.MeetingRequest.duration, HttpContext.Session.GetString("EMP_CODE"));
+            //    return Ok(mr);
+            //}
+        }
 
 
 
 
+        //-------------------------------------------------------
 
-    //    // 1. Fetch the Server-to-Server Access Token
-    //    public async Task<string> GetAccessTokenAsync()
-    //    {
-    //        var zoomConfig = _configuration.GetSection("Zoom");
-    //        var accountId = zoomConfig["AccountId"];
-    //        var clientId = zoomConfig["ClientId"];
-    //        var clientSecret = zoomConfig["ClientSecret"];
+        //    // 1. Fetch the Server-to-Server Access Token
+        //    public async Task<string> GetAccessTokenAsync()
+        //    {
+        //        var zoomConfig = _configuration.GetSection("Zoom");
+        //        var accountId = zoomConfig["AccountId"];
+        //        var clientId = zoomConfig["ClientId"];
+        //        var clientSecret = zoomConfig["ClientSecret"];
 
-    //        var tokenUrl = $"https://zoom.us{accountId}";
+        //        var tokenUrl = $"https://zoom.us{accountId}";
 
-    //        var base64Credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
+        //        var base64Credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
 
-    //        using var request = new HttpRequestMessage(HttpMethod.Post, tokenUrl);
-    //        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64Credentials);
+        //        using var request = new HttpRequestMessage(HttpMethod.Post, tokenUrl);
+        //        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64Credentials);
 
-    //        var response = await _httpClient.SendAsync(request);
-    //        response.EnsureSuccessStatusCode();
+        //        var response = await _httpClient.SendAsync(request);
+        //        response.EnsureSuccessStatusCode();
 
-    //        var jsonString = await response.Content.ReadAsStringAsync();
-    //        using var jsonDoc = JsonDocument.Parse(jsonString);
+        //        var jsonString = await response.Content.ReadAsStringAsync();
+        //        using var jsonDoc = JsonDocument.Parse(jsonString);
 
-    //        return jsonDoc.RootElement.GetProperty("access_token").GetString()
-    //               ?? throw new InvalidOperationException("Failed to retrieve access token.");
-    //    }
+        //        return jsonDoc.RootElement.GetProperty("access_token").GetString()
+        //               ?? throw new InvalidOperationException("Failed to retrieve access token.");
+        //    }
 
-    //    // 2. Create the Meeting
-    //    public async Task<ZoomMeetingResponse> CreateMeetingAsync(string topic, int durationInMinutes)
-    //    {
-    //        var accessToken = await GetAccessTokenAsync();
+        //    // 2. Create the Meeting
+        //    public async Task<ZoomMeetingResponse> CreateMeetingAsync(string topic, int durationInMinutes)
+        //    {
+        //        var accessToken = await GetAccessTokenAsync();
 
-    //        // Zoom API Endpoint to create a meeting for the authenticated user ('me')
-    //        var url = "https://api.zoom.us/v2/users/me/meetings";
+        //        // Zoom API Endpoint to create a meeting for the authenticated user ('me')
+        //        var url = "https://api.zoom.us/v2/users/me/meetings";
 
-    //        var meetingRequest = new
-    //        {
-    //            topic = topic,
-    //            type = 2, // 2 = Scheduled Meeting
-    //            duration = durationInMinutes,
-    //            settings = new
-    //            {
-    //                host_video = true,
-    //                participant_video = true,
-    //                join_before_host = false,
-    //                mute_upon_entry = true
-    //            }
-    //        };
+        //        var meetingRequest = new
+        //        {
+        //            topic = topic,
+        //            type = 2, // 2 = Scheduled Meeting
+        //            duration = durationInMinutes,
+        //            settings = new
+        //            {
+        //                host_video = true,
+        //                participant_video = true,
+        //                join_before_host = false,
+        //                mute_upon_entry = true
+        //            }
+        //        };
 
-    //        var jsonPayload = JsonSerializer.Serialize(meetingRequest);
-    //        using var request = new HttpRequestMessage(HttpMethod.Post, url);
-    //        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-    //        request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+        //        var jsonPayload = JsonSerializer.Serialize(meetingRequest);
+        //        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        //        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        //        request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-    //        var response = await _httpClient.SendAsync(request);
-    //        var jsonResponse = await response.Content.ReadAsStringAsync();
+        //        var response = await _httpClient.SendAsync(request);
+        //        var jsonResponse = await response.Content.ReadAsStringAsync();
 
-    //        if (!response.IsSuccessStatusCode)
-    //        {
-    //            throw new Exception($"Zoom API Error: {jsonResponse}");
-    //        }
+        //        if (!response.IsSuccessStatusCode)
+        //        {
+        //            throw new Exception($"Zoom API Error: {jsonResponse}");
+        //        }
 
-    //        return JsonSerializer.Deserialize<ZoomMeetingResponse>(jsonResponse)!;
-    //    }
-    //}
+        //        return JsonSerializer.Deserialize<ZoomMeetingResponse>(jsonResponse)!;
+        //    }
+        //}
 
-    //// DTO to capture essential Zoom API responses
-    //public class ZoomMeetingResponse
-    //{
-    //    [JsonPropertyName("id")]
-    //    public long Id { get; set; }
+        //// DTO to capture essential Zoom API responses
+        //public class ZoomMeetingResponse
+        //{
+        //    [JsonPropertyName("id")]
+        //    public long Id { get; set; }
 
-    //    [JsonPropertyName("topic")]
-    //    public string Topic { get; set; } = string.Empty;
+        //    [JsonPropertyName("topic")]
+        //    public string Topic { get; set; } = string.Empty;
 
-    //    [JsonPropertyName("join_url")]
-    //    public string JoinUrl { get; set; } = string.Empty;
+        //    [JsonPropertyName("join_url")]
+        //    public string JoinUrl { get; set; } = string.Empty;
 
-    //    [JsonPropertyName("start_url")]
-    //    public string StartUrl { get; set; } = string.Empty;
+        //    [JsonPropertyName("start_url")]
+        //    public string StartUrl { get; set; } = string.Empty;
 
-    //    [JsonPropertyName("password")]
-    //    public string Password { get; set; } = string.Empty;
+        //    [JsonPropertyName("password")]
+        //    public string Password { get; set; } = string.Empty;
     }
 }
