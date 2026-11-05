@@ -26,6 +26,10 @@ namespace ZoomTesting.Models
         static readonly string ZOOM_CLIENT_ID = "dvjIuLMTdyb4_pFQoFvQQ";
         static readonly string ZOOM_CLIENT_SECRET = "wco3GnCK2TibJ4KPG5Giba5n0y0U6DeR";
 
+        //static readonly string ZOOM_ACCOUNT_ID = "406KHXdXRHqppqO5SQ2aFw";
+        //static readonly string ZOOM_CLIENT_ID = "jltuUxaMSb2oitaTRp3wRA";
+        //static readonly string ZOOM_CLIENT_SECRET = "qeFsdkzPqJW7GxXvx6qWXusriXEHfIIe";
+
 
 
         //[HttpPost("/api/meeting/getAccessToken")]
