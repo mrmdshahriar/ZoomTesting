@@ -15,9 +15,15 @@ public class HomeController : Controller
         _service = service;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        _service.CreateMeetingAsync("Test Meeting", 30).Wait();
+        var ss = await _service.GetAccessToken(null!);
+
+        var access_token = ss.access_token;
+        var token_type = ss.token_type;
+        var scope = ss.scope;
+        var expires_in = ss.expires_in;
+
         return View();
     }
 
